@@ -1,2 +1,4 @@
 rootProject.name='Paging'
 include ':app'
+include ':core'
+include ':paging'
