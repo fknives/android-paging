@@ -18,10 +18,6 @@ internal class GitHubRepoRepository(
         return localSource.getFirstElements(numberOfElements)
     }
 
-    suspend fun refresh(numberOfElements: Int): Flow<List<GitHubRepo>> {
-        return fetch(numberOfElements)
-    }
-
     suspend fun get(numberOfElements: Int): Flow<List<GitHubRepo>> {
         val numberOfElementsCached = localSource.numberOfElementsCached()
         if (numberOfElementsCached < numberOfElements) {

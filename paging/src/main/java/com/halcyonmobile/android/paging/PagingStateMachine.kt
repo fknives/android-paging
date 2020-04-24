@@ -27,7 +27,8 @@ class PagingStateMachine<T>(
     private val stream = ConflatedBroadcastChannel<InternalState<T>>()
 
     val pagedDataStream: Flow<PagedResult<T>> = stream
-        .apply { offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, false, false)) } // todo refreshing
+        // TODO Not sure if this fetch should be true or false for the first call, since this attribute is used when fetching and refreshing
+        .apply { offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, true)) }
         .asFlow()
         .flowOn(dispatcher)
         .onEach { onInternalState(it) }
@@ -35,9 +36,13 @@ class PagingStateMachine<T>(
         .flatMapLatest { it }
 
     fun fetch() {
+        (stream.valueOrNull as? InternalState.DoLoading)?.let {
+            // If it's already fetching or refreshing, do nothing
+            if (it.fetch) return
+        }
         currentRequest.cancel()
         currentRequest = Job()
-        stream.offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, true, false))
+        stream.offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, true))
     }
 
     fun onDataBound(position: Int) {
@@ -50,7 +55,7 @@ class PagingStateMachine<T>(
 
     fun retryLoadingInitial() {
         (stream.valueOrNull as? InternalState.InitialLoadingFailed)?.let {
-            stream.offer(InternalState.ShowLoadingInitial(it.dataStream, it.numberOfElements, it.fetch, false))
+            stream.offer(InternalState.ShowLoadingInitial(it.dataStream, it.numberOfElements, it.fetch))
         }
     }
 
@@ -103,7 +108,7 @@ class PagingStateMachine<T>(
         }
 
     private fun onShowLoadingMore(internalState: InternalState.ShowLoadingMore<T>) {
-        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, false, false, false))
+        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, isInitial = false, fetch = false))
     }
 
     private fun onDataAtPositionBound(internalState: InternalState.DataAtPositionBound<T>) {
@@ -111,7 +116,7 @@ class PagingStateMachine<T>(
     }
 
     private fun onShowInitialLoading(internalState: InternalState.ShowLoadingInitial<T>) {
-        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, true, internalState.fetch, false))
+        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, true, internalState.fetch))
     }
 
     private fun showLoading(internalState: InternalState.ShowLoadingInitial<T>): Flow<PagedResult<T>> =
@@ -131,7 +136,7 @@ class PagingStateMachine<T>(
                     )
                 }
                 answer is Answer.Failure && internalState.isInitial ->
-                    InternalState.InitialLoadingFailed(internalState.dataStream, internalState.numberOfElements, internalState.fetch, false, answer.cause)
+                    InternalState.InitialLoadingFailed(internalState.dataStream, internalState.numberOfElements, internalState.fetch, answer.cause)
 
                 answer is Answer.Failure -> InternalState.LoadingMoreFailed(internalState.dataStream, internalState.numberOfElements, answer.cause)
                 else -> throw IllegalStateException("Somehow answer was neither Success nor Failure, that should never happen.")
@@ -148,5 +153,4 @@ class PagingStateMachine<T>(
         data class Success<T>(val data: Flow<List<T>>) : Answer<T>()
         data class Failure<T>(val cause: Throwable) : Answer<T>()
     }
-
 }
