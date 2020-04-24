@@ -23,7 +23,7 @@ class PagingStateMachine<T>(
     private val requestElements: suspend (numberOfElements: Int, isFetch: Boolean) -> Answer<T>
 ) {
 
-    private var cancelCurrentRequest: Job = Job()
+    private var currentRequest: Job = Job()
     private val stream = ConflatedBroadcastChannel<InternalState<T>>()
 
     val pagedDataStream: Flow<PagedResult<T>> = stream
@@ -35,8 +35,8 @@ class PagingStateMachine<T>(
         .flatMapLatest { it }
 
     fun fetch() {
-        cancelCurrentRequest.cancel()
-        cancelCurrentRequest = Job()
+        currentRequest.cancel()
+        currentRequest = Job()
         stream.offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, true, false))
     }
 
@@ -119,7 +119,7 @@ class PagingStateMachine<T>(
 
     private suspend fun onDoLoading(internalState: InternalState.DoLoading<T>) {
         // todo
-        val nextInternalState = CoroutineScope(coroutineContext + cancelCurrentRequest).async {
+        val nextInternalState = CoroutineScope(coroutineContext + currentRequest).async {
             val answer = requestElements(internalState.numberOfElements + pageSize, internalState.fetch)
 
             when {

@@ -5,6 +5,6 @@ import retrofit2.http.Query
 
 internal interface GitHubService {
 
-    @GET("https://api.github.com/users/JakeWharton/repos?page=2&per_page=10")
+    @GET("https://api.github.com/users/JakeWharton/repos")
     suspend fun getReposPaginated(@Query("page") page: Int, @Query("per_page") perPage: Int): List<GitHubRepoResponse>
 }

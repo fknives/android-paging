@@ -110,7 +110,14 @@ class GitHubRepoAdapter(private val listener: GitHubRepoAdapterListener) : ListA
 
     open class BindingViewHolder<Binding : ViewDataBinding> private constructor(val binding: Binding) : RecyclerView.ViewHolder(binding.root) {
 
-        constructor(viewGroup: ViewGroup, @LayoutRes layoutRes: Int) : this(DataBindingUtil.inflate(LayoutInflater.from(viewGroup.context), layoutRes, viewGroup, false))
+        constructor(viewGroup: ViewGroup, @LayoutRes layoutRes: Int) : this(
+            DataBindingUtil.inflate(
+                LayoutInflater.from(viewGroup.context),
+                layoutRes,
+                viewGroup,
+                false
+            )
+        )
     }
 
     class GitHubRepoDiffUtilItemCallback : DiffUtil.ItemCallback<GitHubRepo>() {
@@ -119,6 +126,5 @@ class GitHubRepoAdapter(private val listener: GitHubRepoAdapterListener) : ListA
 
         override fun areContentsTheSame(oldItem: GitHubRepo, newItem: GitHubRepo): Boolean =
             oldItem == newItem
-
     }
 }
