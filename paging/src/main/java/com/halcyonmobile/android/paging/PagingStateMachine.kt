@@ -27,8 +27,7 @@ class PagingStateMachine<T>(
     private val stream = ConflatedBroadcastChannel<InternalState<T>>()
 
     val pagedDataStream: Flow<PagedResult<T>> = stream
-        // TODO Not sure if this fetch should be true or false for the first call, since this attribute is used when fetching and refreshing
-        .apply { offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, true)) }
+        .apply { offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, false)) }
         .asFlow()
         .flowOn(dispatcher)
         .onEach { onInternalState(it) }
@@ -120,7 +119,7 @@ class PagingStateMachine<T>(
     }
 
     private fun showLoading(internalState: InternalState.ShowLoadingInitial<T>): Flow<PagedResult<T>> =
-        combineFlowWithState(internalState.dataStream, PagedState.LoadingInitial)
+        combineFlowWithState(internalState.dataStream, if (internalState.fetch) PagedState.Refreshing else PagedState.LoadingInitial)
 
     private suspend fun onDoLoading(internalState: InternalState.DoLoading<T>) {
         // todo
