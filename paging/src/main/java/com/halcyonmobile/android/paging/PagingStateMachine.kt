@@ -41,7 +41,7 @@ class PagingStateMachine<T>(
         }
         currentRequest.cancel()
         currentRequest = Job()
-        stream.offer(InternalState.ShowLoadingInitial(flowOf(emptyList()), 0, true))
+        stream.offer(InternalState.ShowLoadingInitial(stream.valueOrNull?.dataStream ?: flowOf(emptyList()), 0, true))
     }
 
     fun onDataBound(position: Int) {

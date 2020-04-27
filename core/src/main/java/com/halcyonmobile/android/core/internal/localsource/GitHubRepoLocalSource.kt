@@ -19,7 +19,11 @@ internal class GitHubRepoLocalSource {
         stream.offer(stream.valueOrNull.orEmpty() + toCache)
     }
 
-    fun clearCache(){
+    fun refreshCache(toCache: List<GitHubRepo>) {
+        stream.offer(toCache)
+    }
+
+    fun clearCache() {
         stream.offer(emptyList())
     }
 }

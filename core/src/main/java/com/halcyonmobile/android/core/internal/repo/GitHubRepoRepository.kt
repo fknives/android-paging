@@ -10,12 +10,17 @@ internal class GitHubRepoRepository(
     private val localSource: GitHubRepoLocalSource
 ) {
 
+    @Deprecated("The get will handle the initial load as well, and for refreshing we should use the refresh method")
     suspend fun fetch(numberOfElements: Int): Flow<List<GitHubRepo>> {
         localSource.clearCache()
         val dataLoaded = remoteSource.getReposPaginated(page = 1, perPage = numberOfElements)
         localSource.addToCache(dataLoaded)
 
         return localSource.getFirstElements(numberOfElements)
+    }
+
+    suspend fun refresh(numberOfElements: Int): Flow<List<GitHubRepo>> = localSource.getFirstElements(numberOfElements).also {
+        localSource.refreshCache(remoteSource.getReposPaginated(page = 1, perPage = numberOfElements))
     }
 
     suspend fun get(numberOfElements: Int): Flow<List<GitHubRepo>> {
