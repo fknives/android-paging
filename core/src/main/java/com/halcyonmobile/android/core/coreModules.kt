@@ -17,7 +17,8 @@ fun createCoreModules(baseUrl: String = "https://api.github.com/"): List<Module>
         createNetworkModule(baseUrl),
         createRepoModule(),
         createCacheModule(),
-        createUseCaseModule()
+        createUseCaseModule(),
+        createLoggerModule()
     )
 
 internal fun createNetworkModule(baseUrl: String) = module {
@@ -39,10 +40,13 @@ internal fun createCacheModule() = module {
 }
 
 internal fun createRepoModule() = module {
-    single(override = true) { GitHubRepoGithubRepoRepository(get(), get()) }
+    single(override = true) { GitHubRepoGithubRepoRepository(get(), get(), get<DebugErrorLogger>()) }
 }
 
 internal fun createUseCaseModule() = module {
     factory { GetGitHubReposPaginatedUseCase(get<GitHubRepoGithubRepoRepository>()) }
 }
 
+internal fun createLoggerModule() = module {
+    single { DebugErrorLogger() }
+}
