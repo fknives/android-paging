@@ -34,10 +34,10 @@ class PagingStateMachine<T>(
         .mapNotNull { internalStateToDataWithPagedState(it) }
         .flatMapLatest { it }
 
-    fun fetch() {
+    fun refresh() {
         (stream.valueOrNull as? InternalState.DoLoading)?.let {
             // If it's already fetching or refreshing, do nothing
-            if (it.fetch) return
+            if (it.refresh) return
         }
         currentRequest.cancel()
         currentRequest = Job()
@@ -54,7 +54,7 @@ class PagingStateMachine<T>(
 
     fun retryLoadingInitial() {
         (stream.valueOrNull as? InternalState.InitialLoadingFailed)?.let {
-            stream.offer(InternalState.ShowLoadingInitial(it.dataStream, it.numberOfElements, it.fetch))
+            stream.offer(InternalState.ShowLoadingInitial(it.dataStream, it.numberOfElements, it.refresh))
         }
     }
 
@@ -90,7 +90,10 @@ class PagingStateMachine<T>(
     }
 
     private fun showInitialLoadingFailed(internalState: InternalState.InitialLoadingFailed<T>): Flow<PagedResult<T>> =
-        combineFlowWithState(internalState.dataStream, PagedState.ErrorLoadingInitial(internalState.cause))
+        combineFlowWithState(
+            internalState.dataStream,
+            if (internalState.refresh) PagedState.RefreshingError(internalState.cause) else PagedState.ErrorLoadingInitial(internalState.cause)
+        )
 
     private fun showLoadingMoreFailed(internalState: InternalState.LoadingMoreFailed<T>): Flow<PagedResult<T>> =
         combineFlowWithState(internalState.dataStream, PagedState.ErrorLoadingMore(internalState.cause))
@@ -107,7 +110,7 @@ class PagingStateMachine<T>(
         }
 
     private fun onShowLoadingMore(internalState: InternalState.ShowLoadingMore<T>) {
-        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, isInitial = false, fetch = false))
+        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, isInitial = false, refresh = false))
     }
 
     private fun onDataAtPositionBound(internalState: InternalState.DataAtPositionBound<T>) {
@@ -115,16 +118,16 @@ class PagingStateMachine<T>(
     }
 
     private fun onShowInitialLoading(internalState: InternalState.ShowLoadingInitial<T>) {
-        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, true, internalState.fetch))
+        stream.offer(InternalState.DoLoading(internalState.dataStream, internalState.numberOfElements, true, internalState.refresh))
     }
 
     private fun showLoading(internalState: InternalState.ShowLoadingInitial<T>): Flow<PagedResult<T>> =
-        combineFlowWithState(internalState.dataStream, if (internalState.fetch) PagedState.Refreshing else PagedState.LoadingInitial)
+        combineFlowWithState(internalState.dataStream, if (internalState.refresh) PagedState.Refreshing else PagedState.LoadingInitial)
 
     private suspend fun onDoLoading(internalState: InternalState.DoLoading<T>) {
         // todo
         val nextInternalState = CoroutineScope(coroutineContext + currentRequest).async {
-            val answer = requestElements(internalState.numberOfElements + pageSize, internalState.fetch)
+            val answer = requestElements(internalState.numberOfElements + pageSize, internalState.refresh)
 
             when {
                 answer is Answer.Success -> {
@@ -135,7 +138,7 @@ class PagingStateMachine<T>(
                     )
                 }
                 answer is Answer.Failure && internalState.isInitial ->
-                    InternalState.InitialLoadingFailed(internalState.dataStream, internalState.numberOfElements, internalState.fetch, answer.cause)
+                    InternalState.InitialLoadingFailed(internalState.dataStream, internalState.numberOfElements, internalState.refresh, answer.cause)
 
                 answer is Answer.Failure -> InternalState.LoadingMoreFailed(internalState.dataStream, internalState.numberOfElements, answer.cause)
                 else -> throw IllegalStateException("Somehow answer was neither Success nor Failure, that should never happen.")

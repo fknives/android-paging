@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.map
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.halcyonmobile.android.paging.PagedState
 import com.halcyonmobile.android.paging.R
 import com.halcyonmobile.android.paging.databinding.MainFragmentBinding
@@ -49,6 +50,12 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         })
         viewModel.state.map { it is PagedState.ErrorLoadingInitial }.observe(viewLifecycleOwner, Observer {
             binding.errorMessage.isVisible = it
+        })
+        viewModel.state.map { it }.observe(viewLifecycleOwner, Observer {
+            if (it is PagedState.RefreshingError) {
+                Snackbar.make(binding.root, "Refreshing error", Snackbar.LENGTH_LONG).show()
+                it.cause.printStackTrace()
+            }
         })
     }
 

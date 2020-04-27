@@ -9,20 +9,20 @@ sealed class InternalState<T> {
     class ShowLoadingInitial<T>(
         override val dataStream: Flow<List<T>>,
         override val numberOfElements: Int,
-        val fetch: Boolean
+        val refresh: Boolean
     ) : InternalState<T>()
 
     class DoLoading<T> constructor(
         override val dataStream: Flow<List<T>>,
         override val numberOfElements: Int,
         val isInitial: Boolean,
-        val fetch: Boolean
+        val refresh: Boolean
     ) : InternalState<T>()
 
     class InitialLoadingFailed<T>(
         override val dataStream: Flow<List<T>>,
         override val numberOfElements: Int,
-        val fetch: Boolean,
+        val refresh: Boolean,
         val cause: Throwable
     ) : InternalState<T>()
 
