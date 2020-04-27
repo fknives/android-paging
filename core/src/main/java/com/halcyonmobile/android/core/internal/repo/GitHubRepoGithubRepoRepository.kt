@@ -5,15 +5,19 @@ import com.halcyonmobile.android.core.internal.localsource.GitHubRepoLocalSource
 import com.halcyonmobile.android.core.model.GitHubRepo
 import kotlinx.coroutines.flow.Flow
 
-internal class GitHubRepoRepository(
+internal class GitHubRepoGithubRepoRepository(
     private val remoteSource: GitHubRepoRemoteSource,
     private val localSource: GitHubRepoLocalSource
-) {
+) : GithubRepoRepositoryHelper<GitHubRepo> {
 
-    suspend fun fetch(numberOfElements: Int): Flow<List<GitHubRepo>> {
+    /**
+     * Makes a call to the [GitHubRepoRemoteSource], caches the fetched data, and returns it from the local storage
+     * @param numberOfElements - the number of elements per page
+     */
+    override suspend fun fetch(numberOfElements: Int): Flow<List<GitHubRepo>> {
         localSource.clearCache()
-        val dataLoaded = remoteSource.getReposPaginated(page = 1, perPage = numberOfElements)
-        localSource.addToCache(dataLoaded)
+        val loadedData = remoteSource.getReposPaginated(page = 1, perPage = numberOfElements)
+        localSource.addToCache(loadedData)
 
         return localSource.getFirstElements(numberOfElements)
     }
@@ -22,14 +26,18 @@ internal class GitHubRepoRepository(
         return fetch(numberOfElements)
     }
 
-    suspend fun get(numberOfElements: Int): Flow<List<GitHubRepo>> {
+    /**
+     * Gets the data from the [GitHubRepoLocalSource] with no calls to any remote source and returns it from the local storage
+     * @param numberOfElements - the number of elements per page
+     */
+    override suspend fun get(numberOfElements: Int): Flow<List<GitHubRepo>> {
         val numberOfElementsCached = localSource.numberOfElementsCached()
         if (numberOfElementsCached < numberOfElements) {
-            val dataLoaded = remoteSource.getReposPaginated(
+            val loadedData = remoteSource.getReposPaginated(
                 page = numberOfElements / (numberOfElements - numberOfElementsCached),
                 perPage = numberOfElements - numberOfElementsCached
             )
-            localSource.addToCache(dataLoaded)
+            localSource.addToCache(loadedData)
         }
 
         return localSource.getFirstElements(numberOfElements)

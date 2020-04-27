@@ -1,16 +1,16 @@
 package com.halcyonmobile.android.core.internal.usecase
 
-import com.halcyonmobile.android.core.internal.repo.GitHubRepoRepository
+import com.halcyonmobile.android.core.internal.repo.GithubRepoRepositoryHelper
 import com.halcyonmobile.android.core.model.GitHubRepo
 import com.halcyonmobile.android.paging.PagingStateMachine
 import kotlinx.coroutines.flow.Flow
 
-class GetGitHubReposPaginatedUseCase internal constructor(private val gitHubRepoRepository: GitHubRepoRepository) {
+class GetGitHubReposPaginatedUseCase internal constructor(private val gitHubRepoGithubRepoRepository: GithubRepoRepositoryHelper<GitHubRepo>) {
 
-    operator fun invoke(pageSize: Int = 10) : PagingStateMachine<GitHubRepo> {
-        return PagingStateMachine(pageSize = pageSize, requestElements =  { numberOfElements, fetch ->
+    operator fun invoke(pageSize: Int = 10): PagingStateMachine<GitHubRepo> {
+        return PagingStateMachine(pageSize = pageSize, requestElements = { numberOfElements, fetch ->
             wrapRepoResponse {
-                if (fetch) gitHubRepoRepository.fetch(numberOfElements) else gitHubRepoRepository.get(numberOfElements)
+                if (fetch) gitHubRepoGithubRepoRepository.fetch(numberOfElements) else gitHubRepoGithubRepoRepository.get(numberOfElements)
             }
         })
     }

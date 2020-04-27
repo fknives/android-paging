@@ -3,7 +3,7 @@ package com.halcyonmobile.android.core
 import com.halcyonmobile.android.core.internal.api.GitHubRepoRemoteSource
 import com.halcyonmobile.android.core.internal.api.GitHubService
 import com.halcyonmobile.android.core.internal.localsource.GitHubRepoLocalSource
-import com.halcyonmobile.android.core.internal.repo.GitHubRepoRepository
+import com.halcyonmobile.android.core.internal.repo.GitHubRepoGithubRepoRepository
 import com.halcyonmobile.android.core.internal.usecase.GetGitHubReposPaginatedUseCase
 import com.squareup.moshi.Moshi
 import org.koin.core.module.Module
@@ -39,10 +39,10 @@ internal fun createCacheModule() = module {
 }
 
 internal fun createRepoModule() = module {
-    single(override = true) { GitHubRepoRepository(get(), get()) }
+    single(override = true) { GitHubRepoGithubRepoRepository(get(), get()) }
 }
 
 internal fun createUseCaseModule() = module {
-    factory { GetGitHubReposPaginatedUseCase(get()) }
+    factory { GetGitHubReposPaginatedUseCase(get<GitHubRepoGithubRepoRepository>()) }
 }
 
