@@ -21,7 +21,7 @@ class MainViewModel(getGitHubReposPaginated: GetGitHubReposPaginatedUseCase) : V
     val state = result.map { it.pagedState }
 
     fun onRefresh() {
-        paginatedDataInteractor.fetch()
+        paginatedDataInteractor.refresh()
     }
 
     fun onRetryLoadingInitial() {

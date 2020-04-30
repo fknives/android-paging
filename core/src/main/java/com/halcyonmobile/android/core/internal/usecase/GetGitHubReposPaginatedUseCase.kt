@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.Flow
 
 class GetGitHubReposPaginatedUseCase internal constructor(private val gitHubRepoRepository: GitHubRepoRepository) {
 
-    operator fun invoke(pageSize: Int = 10) : PagingStateMachine<GitHubRepo> {
-        return PagingStateMachine(pageSize = pageSize, requestElements =  { numberOfElements, fetch ->
+    operator fun invoke(pageSize: Int = 10): PagingStateMachine<GitHubRepo> {
+        return PagingStateMachine(pageSize = pageSize, requestElements = { numberOfElements, refresh ->
             wrapRepoResponse {
-                if (fetch) gitHubRepoRepository.fetch(numberOfElements) else gitHubRepoRepository.get(numberOfElements)
+                if (refresh) gitHubRepoRepository.refresh(numberOfElements) else gitHubRepoRepository.get(numberOfElements)
             }
         })
     }
