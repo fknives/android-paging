@@ -2,12 +2,12 @@ package com.halcyonmobile.android.paging.ui.main
 
 import android.os.Bundle
 import android.view.View
-import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.map
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.halcyonmobile.android.paging.PagedState
 import com.halcyonmobile.android.paging.R
 import com.halcyonmobile.android.paging.databinding.MainFragmentBinding
@@ -25,6 +25,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         binding.recycler.adapter = adapter
         binding.recycler.layoutManager = LinearLayoutManager(requireContext())
         binding.errorMessage.setOnClickListener { viewModel.onRefresh() }
+        binding.refreshLayout.setOnRefreshListener { viewModel.onRefresh() }
         viewModel.state.observe(viewLifecycleOwner, Observer {
             binding.recycler.post {
                 when (it) {
@@ -38,8 +39,11 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         viewModel.dataStream.observe(viewLifecycleOwner, Observer {
             adapter.submitList(it.orEmpty())
         })
-        viewModel.state.map { it is PagedState.LoadingInitial || it is PagedState.Refreshing }.observe(viewLifecycleOwner, Observer {
-            binding.refreshLayout.isRefreshing = it ?: false
+        viewModel.state.map { it is PagedState.LoadingInitial }.observe(viewLifecycleOwner, Observer {
+            binding.initialProgressBar.isVisible = it
+        })
+        viewModel.state.map { it is PagedState.Refreshing }.observe(viewLifecycleOwner, Observer {
+            binding.refreshLayout.isRefreshing = it
         })
         viewModel.state.map { it !is PagedState.LoadingInitial && it !is PagedState.ErrorLoadingInitial }.observe(viewLifecycleOwner, Observer {
             binding.recycler.isVisible = it
@@ -47,15 +51,19 @@ class MainFragment : Fragment(R.layout.main_fragment) {
         viewModel.state.map { it is PagedState.ErrorLoadingInitial }.observe(viewLifecycleOwner, Observer {
             binding.errorMessage.isVisible = it
         })
+        viewModel.state.map { it }.observe(viewLifecycleOwner, Observer {
+            if (it is PagedState.RefreshingError) {
+                Snackbar.make(binding.root, "Refreshing error", Snackbar.LENGTH_LONG).show()
+                it.cause.printStackTrace()
+            }
+        })
     }
 
-
     companion object {
-        fun MainViewModel.toAdapterListener() : GitHubRepoAdapter.GitHubRepoAdapterListener = object : GitHubRepoAdapter.GitHubRepoAdapterListener{
+        fun MainViewModel.toAdapterListener(): GitHubRepoAdapter.GitHubRepoAdapterListener = object : GitHubRepoAdapter.GitHubRepoAdapterListener {
             override fun onDataAtPositionBound(position: Int) = this@toAdapterListener.onDataAtPositionBound(position)
 
             override fun onRetryLoadingMoreClicked() = onRetryLoadingMore()
-
         }
     }
 }

@@ -24,6 +24,13 @@
                 android:layout_gravity="center"
                 android:background="?attr/selectableItemBackground"
                 android:text="Something Went Wong" />
+
+            <ProgressBar
+                android:id="@+id/initial_progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+
         </FrameLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
