@@ -1,4 +1,4 @@
-package com.halcyonmobile.android.core
+package com.halcyonmobile.android.paging.repo.log
 
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -10,6 +10,10 @@ class DebugErrorLogger : ErrorLogger {
      * Log an error that might occur
      */
     override fun logError(throwable: Throwable) {
-        logger.log(Level.SEVERE, if (!throwable.message.isNullOrEmpty()) throwable.message else "A problem has occurred!")
+        logger.log(Level.SEVERE, if (!throwable.message.isNullOrEmpty()) throwable.message else DEFAULT_ERROR_MESSAGE)
+    }
+
+    companion object {
+        private const val DEFAULT_ERROR_MESSAGE = "A problem has occurred!"
     }
 }

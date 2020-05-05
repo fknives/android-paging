@@ -1,4 +1,4 @@
-package com.halcyonmobile.android.core
+package com.halcyonmobile.android.paging.repo.log
 
 interface ErrorLogger {
     fun logError(throwable: Throwable)

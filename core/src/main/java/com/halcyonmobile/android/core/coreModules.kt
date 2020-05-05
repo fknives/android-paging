@@ -3,8 +3,9 @@ package com.halcyonmobile.android.core
 import com.halcyonmobile.android.core.internal.api.GitHubRepoRemoteSource
 import com.halcyonmobile.android.core.internal.api.GitHubService
 import com.halcyonmobile.android.core.internal.localsource.GitHubRepoLocalSource
-import com.halcyonmobile.android.core.internal.repo.GitHubRepoGithubRepoRepository
+import com.halcyonmobile.android.core.internal.repo.GitHubRepoRepository
 import com.halcyonmobile.android.core.internal.usecase.GetGitHubReposPaginatedUseCase
+import com.halcyonmobile.android.paging.repo.log.DebugErrorLogger
 import com.squareup.moshi.Moshi
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -40,11 +41,11 @@ internal fun createCacheModule() = module {
 }
 
 internal fun createRepoModule() = module {
-    single(override = true) { GitHubRepoGithubRepoRepository(get(), get(), get<DebugErrorLogger>()) }
+    single(override = true) { GitHubRepoRepository(get(), get(), get<DebugErrorLogger>()) }
 }
 
 internal fun createUseCaseModule() = module {
-    factory { GetGitHubReposPaginatedUseCase(get<GitHubRepoGithubRepoRepository>()) }
+    factory { GetGitHubReposPaginatedUseCase(get<GitHubRepoRepository>()) }
 }
 
 internal fun createLoggerModule() = module {

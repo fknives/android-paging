@@ -1,11 +1,14 @@
 package com.halcyonmobile.android.core.internal.localsource
 
 import com.halcyonmobile.android.core.model.GitHubRepo
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.map
 
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 internal class GitHubRepoLocalSource {
 
     private val stream = ConflatedBroadcastChannel<List<GitHubRepo>>()
