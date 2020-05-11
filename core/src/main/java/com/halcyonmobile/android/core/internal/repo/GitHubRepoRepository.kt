@@ -14,18 +14,6 @@ internal class GitHubRepoRepository(
 ) : RepositoryHelper<GitHubRepo>(logger) {
 
     /**
-     * Makes a call to the [GitHubRepoRemoteSource], caches the fetched data, and returns it from the local storage
-     * @param numberOfElements - the number of elements per page
-     */
-    @Deprecated("The get will handle the initial load as well, and for refreshing we should use the refresh method")
-    override suspend fun fetch(numberOfElements: Int): Flow<List<GitHubRepo>> = run {
-        localSource.clearCache()
-        val dataLoaded = remoteSource.getReposPaginated(page = 1, perPage = numberOfElements)
-        localSource.addToCache(dataLoaded)
-        localSource.getFirstElements(numberOfElements)
-    }
-
-    /**
      * Caches the data that is fetched from the remote source to the local cache.
      * @param numberOfElements - the number of elements per page
      */
