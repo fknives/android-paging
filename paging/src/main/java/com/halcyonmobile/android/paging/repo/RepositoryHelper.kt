@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
  * [get] - intended for fetching the data that exists locally in the cache
  * [refresh] - intended for making sure that the local data is in sync with the remote
  */
-abstract class GithubRepoRepositoryHelper<T>(private val errorLogger: ErrorLogger) {
+abstract class RepositoryHelper<T>(private val errorLogger: ErrorLogger) {
 
     abstract suspend fun fetch(numberOfElements: Int): Flow<List<T>>
     abstract suspend fun get(numberOfElements: Int): Flow<List<T>>
@@ -19,7 +19,7 @@ abstract class GithubRepoRepositoryHelper<T>(private val errorLogger: ErrorLogge
         errorLogger.logError(throwable)
     }
 
-    suspend inline fun <T> runWithLogger(crossinline call: suspend () -> Flow<List<T>>): Flow<List<T>> {
+    suspend inline fun <T> run(crossinline call: suspend () -> Flow<List<T>>): Flow<List<T>> {
         try {
             return call()
         } catch (throwable: Throwable) {

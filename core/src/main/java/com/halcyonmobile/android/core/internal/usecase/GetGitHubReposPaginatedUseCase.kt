@@ -2,10 +2,10 @@ package com.halcyonmobile.android.core.internal.usecase
 
 import com.halcyonmobile.android.core.model.GitHubRepo
 import com.halcyonmobile.android.paging.PagingStateMachine
-import com.halcyonmobile.android.paging.repo.GithubRepoRepositoryHelper
+import com.halcyonmobile.android.paging.repo.RepositoryHelper
 import kotlinx.coroutines.flow.Flow
 
-class GetGitHubReposPaginatedUseCase internal constructor(private val gitHubRepoRepository: GithubRepoRepositoryHelper<GitHubRepo>) {
+class GetGitHubReposPaginatedUseCase internal constructor(private val gitHubRepoRepository: RepositoryHelper<GitHubRepo>) {
 
     operator fun invoke(pageSize: Int = 10): PagingStateMachine<GitHubRepo> {
         return PagingStateMachine(pageSize = pageSize, requestElements = { numberOfElements, refresh ->
