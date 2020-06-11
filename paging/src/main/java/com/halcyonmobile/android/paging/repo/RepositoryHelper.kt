@@ -1,6 +1,7 @@
 package com.halcyonmobile.android.paging.repo
 
 import com.halcyonmobile.android.paging.repo.log.ErrorLogger
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
  */
 abstract class RepositoryHelper<T>(private val errorLogger: ErrorLogger) {
 
+    abstract val isEndReached: ConflatedBroadcastChannel<Boolean>
     abstract suspend fun get(numberOfElements: Int): Flow<List<T>>
     abstract suspend fun refresh(numberOfElements: Int): Flow<List<T>>
 

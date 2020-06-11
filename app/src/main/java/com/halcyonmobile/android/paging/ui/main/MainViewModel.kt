@@ -3,8 +3,11 @@ package com.halcyonmobile.android.paging.ui.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.halcyonmobile.android.core.internal.usecase.GetGitHubReposPaginatedUseCase
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 // todo proper error logging
 class MainViewModel(getGitHubReposPaginated: GetGitHubReposPaginatedUseCase) : ViewModel() {
@@ -13,12 +16,24 @@ class MainViewModel(getGitHubReposPaginated: GetGitHubReposPaginatedUseCase) : V
     private val result = liveData {
         try {
             paginatedDataInteractor.pagedDataStream.collect { emit(it) }
-        } catch (throwable: Throwable){
+        } catch (throwable: Throwable) {
             throwable.printStackTrace()
         }
     }
     val dataStream = result.map { it.data }
     val state = result.map { it.pagedState }
+
+    var isEndReached = false
+
+    init {
+        viewModelScope.launch {
+            getGitHubReposPaginated.isEndReached
+                .asFlow()
+                .collect {
+                    isEndReached = it
+                }
+        }
+    }
 
     fun onRefresh() {
         paginatedDataInteractor.refresh()
