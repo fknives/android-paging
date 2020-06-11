@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 class GetGitHubReposPaginatedUseCase internal constructor(private val gitHubRepoRepository: RepositoryHelper<GitHubRepo>) {
 
+    val isEndReached = gitHubRepoRepository.isEndReached
+
     operator fun invoke(pageSize: Int = 10): PagingStateMachine<GitHubRepo> {
         return PagingStateMachine(pageSize = pageSize, requestElements = { numberOfElements, refresh ->
             wrapRepoResponse {

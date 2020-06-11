@@ -31,7 +31,7 @@ class MainFragment : Fragment(R.layout.main_fragment) {
                 when (it) {
                     is PagedState.LoadingMore -> adapter.onLoadingMore()
                     is PagedState.ErrorLoadingMore -> adapter.onErrorLoadingMore()
-                    is PagedState.EndReached -> adapter.onEndReached()
+                    is PagedState.EndReached -> if (viewModel.isEndReached) adapter.onEndReached()
                     else -> Unit
                 }
             }
